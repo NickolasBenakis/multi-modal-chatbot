@@ -12,31 +12,46 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-      {messages.map(m => (
-        <div key={m.id} className="whitespace-pre-wrap">
-          {m.role === 'user' ? 'User: ' : 'AI: '}
-          {m.parts.map((part, partIndex) => (
-            <span key={`${m.id}-${partIndex}`}>
-              {part.type === 'text' ? part.text : <span className="text-gray-500">...</span>}
-            </span>
-          ))}
-          <div>
-            {m?.experimental_attachments
-              ?.filter(attachment =>
-                attachment?.contentType?.startsWith('image/'),
-              )
-              .map((attachment, index) => (
-                <Image
-                  key={`${m.id}-${index}`}
-                  src={attachment.url}
-                  width={500}
-                  height={500}
-                  alt={attachment.name ?? `attachment-${index}`}
-                />
-              ))}
+      {messages.map((message, messageIndex) => {
+        const isLast = messageIndex === messages.length - 1;
+        return (
+          <div key={message.id} className="whitespace-pre-wrap">
+            {message.role === 'user' ? 'User: ' : 'AI: '}
+
+            {message.parts.map((part, partIndex) => {
+              switch (part.type) {
+                case 'text':
+                  return (
+                    <span key={`${message.id}-${partIndex}`}>
+                      {part.text}
+                    </span>
+                  );
+                default:
+                  return null;
+              }
+            })}
+
+            {/* Show ... while loading for the last AI message */}
+            {isLast && message.role === 'assistant' ? <span className="animate-pulse"> ...</span> : null}
+            
+            <div>
+              {message?.experimental_attachments
+                ?.filter(attachment =>
+                  attachment?.contentType?.startsWith('image/'),
+                )
+                .map((attachment, index) => (
+                  <Image
+                    key={`${message.id}-${index}`}
+                    src={attachment.url}
+                    width={500}
+                    height={500}
+                    alt={attachment.name ?? `attachment-${index}`}
+                  />
+                ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <form
         className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl space-y-2"

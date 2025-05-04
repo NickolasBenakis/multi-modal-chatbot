@@ -8,7 +8,7 @@ export const getWeatherData = async (location: string) => {
     const response = await axios.get(
       `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
         location
-      )}&units=imperial&appid=${WEATHER_API_KEY}`
+      )}&units=metric&appid=${WEATHER_API_KEY}`
     );
     
     const data = response.data;
