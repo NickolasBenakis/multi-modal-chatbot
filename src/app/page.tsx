@@ -1,14 +1,18 @@
-'use client';
+"use client";
 
-import { useChat } from '@ai-sdk/react';
-import { useRef, useState } from 'react';
-import Image from 'next/image';
+import { useChat } from "@ai-sdk/react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    maxSteps: 5
+  });
 
   const [files, setFiles] = useState<FileList | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  console.log("messages", messages);
 
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
@@ -16,29 +20,23 @@ export default function Chat() {
         const isLast = messageIndex === messages.length - 1;
         return (
           <div key={message.id} className="whitespace-pre-wrap">
-            {message.role === 'user' ? 'User: ' : 'AI: '}
+            {message.role === "user" ? "User: " : "AI: "}
 
             {message.parts.map((part, partIndex) => {
               switch (part.type) {
-                case 'text':
-                  return (
-                    <span key={`${message.id}-${partIndex}`}>
-                      {part.text}
-                    </span>
-                  );
+                case "text":
+                  return <span key={`${message.id}-${partIndex}`}>{part.text}</span>;        
                 default:
                   return null;
               }
             })}
 
             {/* Show ... while loading for the last AI message */}
-            {isLast && message.role === 'assistant' ? <span className="animate-pulse"> ...</span> : null}
-            
+            {isLast && message.role === 'assistant' && message.parts.every(part => part.type !=='text') ? <span className="animate-pulse"> ...</span> : null}
+
             <div>
               {message?.experimental_attachments
-                ?.filter(attachment =>
-                  attachment?.contentType?.startsWith('image/'),
-                )
+                ?.filter((attachment) => attachment?.contentType?.startsWith("image/"))
                 .map((attachment, index) => (
                   <Image
                     key={`${message.id}-${index}`}
@@ -55,7 +53,7 @@ export default function Chat() {
 
       <form
         className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl space-y-2"
-        onSubmit={event => {
+        onSubmit={(event) => {
           handleSubmit(event, {
             experimental_attachments: files,
           });
@@ -63,14 +61,14 @@ export default function Chat() {
           setFiles(undefined);
 
           if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+            fileInputRef.current.value = "";
           }
         }}
       >
         <input
           type="file"
           className=""
-          onChange={event => {
+          onChange={(event) => {
             if (event.target.files) {
               setFiles(event.target.files);
             }
